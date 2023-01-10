@@ -13,6 +13,7 @@ using System.Xml;
 using Android.Database;
 using static AndroidX.Core.Content.PM.PermissionInfoCompat;
 using Android.Provider;
+using Microsoft.Maui.Controls.PlatformConfiguration;
 
 
 //https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/native-embedding?view=net-maui-7.0
@@ -116,7 +117,8 @@ public class MainActivity : MauiAppCompatActivity, EMDKManager.IEMDKListener, EM
         sb.AppendLine("onData:" + CheckXmlError(results));
         sb.AppendLine("Final Display TO: " + QueryAndroidSystemSettings(Settings.System.GetUriFor(Settings.System.ScreenOffTimeout)) +"msec" );
         long end_time = DateTime.Now.Ticks;
-        sb.AppendLine("Time spent: " + (end_time-begin_time)/10000 +"msec" );
+        sb.AppendLine("EXEC TIME=" + (end_time-begin_time)/10000 +"msec" );
+        sb.AppendLine("BOOT=" + (SystemClock.ElapsedRealtime())/ 1000 +"sec ago" );
 
 
         //var toast = Toast.MakeText(this, sb.ToString(), ToastLength.Long);
@@ -152,6 +154,9 @@ public class MainActivity : MauiAppCompatActivity, EMDKManager.IEMDKListener, EM
     {
         base.OnPostCreate(savedInstanceState);
         begin_time = DateTime.Now.Ticks;
+        String build_who = Build.Manufacturer + "," + Build.Model + "\n" + Build.Display + ", API:" + Build.VERSION.SdkInt;
+
+        sb.AppendLine(build_who);
 
         //adb shell content query --uri content://settings/system/screen_off_timeout
         sb.AppendLine("Initial Display TO: " + QueryAndroidSystemSettings(Settings.System.GetUriFor(Settings.System.ScreenOffTimeout)) + "msec");
