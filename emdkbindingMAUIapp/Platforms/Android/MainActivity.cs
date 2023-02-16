@@ -14,6 +14,7 @@ using Android.Database;
 using static AndroidX.Core.Content.PM.PermissionInfoCompat;
 using Android.Provider;
 using Microsoft.Maui.Controls.PlatformConfiguration;
+using System.Text.RegularExpressions;
 
 
 //https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/native-embedding?view=net-maui-7.0
@@ -133,6 +134,10 @@ public class MainActivity : MauiAppCompatActivity, EMDKManager.IEMDKListener, EM
         base.OnCreate(savedInstanceState);
 
         sb = new StringBuilder();
+
+        String whoAmI = GetExternalFilesDir(Android.OS.Environment.DirectoryDownloads).AbsolutePath;  //"/storage/emulated/10/Android/data/com.ndzl.emdkmaui/files/Download"
+        String firstPath = whoAmI.Substring(0, whoAmI.IndexOf("/Android"));
+        sb.AppendLine("Running as user #" + Regex.Match(firstPath, @"\d+").Value );
 
 
         //RECEIVING A STRING FROM XAML AND EXECUTING IN NATIVE ANDROID

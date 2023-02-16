@@ -1,6 +1,7 @@
 ﻿using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Controls;
 using CommunityToolkit.Mvvm.Messaging;
+using NuGet;
 
 namespace emdkMAUIapp;
 
@@ -16,6 +17,8 @@ public partial class MainPage : ContentPage
         {
             MainThread.BeginInvokeOnMainThread( () => { lbWelcome.Text = m;} );
         });
+
+		lbWelcome.Text += " v" + AppInfo.VersionString;
 
     }
 
