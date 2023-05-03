@@ -15,6 +15,7 @@ using static AndroidX.Core.Content.PM.PermissionInfoCompat;
 using Android.Provider;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using System.Text.RegularExpressions;
+using Symbol.XamarinEMDK.Barcode;
 
 
 //https://learn.microsoft.com/en-us/dotnet/maui/platform-integration/native-embedding?view=net-maui-7.0
@@ -31,7 +32,7 @@ public class MainActivity : MauiAppCompatActivity, EMDKManager.IEMDKListener, EM
     private ProfileManager profileManager = null;
     StringBuilder sb;
     private Symbol.XamarinEMDK.Notification.NotificationManager notificationManager;
-
+    private Symbol.XamarinEMDK.Barcode.BarcodeManager barcodeManager;
     
 
     void EMDKManager.IEMDKListener.OnClosed()
@@ -69,6 +70,7 @@ public class MainActivity : MauiAppCompatActivity, EMDKManager.IEMDKListener, EM
             emdkManager.GetInstanceAsync(EMDKManager.FEATURE_TYPE.Profile, this);
             emdkManager.GetInstanceAsync(EMDKManager.FEATURE_TYPE.Version, this);
             emdkManager.GetInstanceAsync(EMDKManager.FEATURE_TYPE.Notification, this);
+            emdkManager.GetInstanceAsync(EMDKManager.FEATURE_TYPE.Barcode, this);   //just a test
         }
         catch (Exception e)
         {
@@ -109,6 +111,85 @@ public class MainActivity : MauiAppCompatActivity, EMDKManager.IEMDKListener, EM
 
             }
 
+			if (statusData.FeatureType == EMDKManager.FEATURE_TYPE.Barcode)
+			{
+				barcodeManager = (Symbol.XamarinEMDK.Barcode.BarcodeManager)emdkBase;
+
+  
+                // Enumerate scanners 
+                EnumerateScanners();
+            }
+
+		}
+    }
+
+    private Scanner scanner = null;
+    private IList<ScannerInfo> scannerList = null;
+    private void EnumerateScanners()
+    {
+        if (barcodeManager != null)
+        {
+            int spinnerIndex = 0;
+            List<string> friendlyNameList = new List<string>();
+
+            // Query the supported scanners on the device
+            scannerList = barcodeManager.SupportedDevicesInfo;
+
+            if ((scannerList != null) && (scannerList.Count > 0))
+            {
+                foreach (ScannerInfo scnInfo in scannerList)
+                {
+                    friendlyNameList.Add(scnInfo.FriendlyName);
+
+                    // Save index of the default scanner (device specific one)
+                    if (scnInfo.IsDefaultScanner)
+                    {
+                       
+                    }
+
+                    ++spinnerIndex;
+                }
+                scanner = barcodeManager.GetDevice(BarcodeManager.DeviceIdentifier.Default);
+                scanner.Data += scanner_Data;
+                scanner.Enable();
+
+                //EMDK: Configure the scanner settings
+                ScannerConfig config = scanner.GetConfig();
+                config.SkipOnUnsupported = ScannerConfig.SkipOnUnSupported.None;
+                config.ScanParams.DecodeLEDFeedback = true;
+                config.ReaderParams.ReaderSpecific.ImagerSpecific.PickList = ScannerConfig.PickList.Enabled;
+                config.DecoderParams.Code39.Enabled = true;
+                config.DecoderParams.Code128.Enabled = false;
+                config.DecoderParams.Ean8.Enabled = true;
+                config.DecoderParams.Ean13.Enabled = true;
+                config.DecoderParams.QrCode.Enabled = true;
+                scanner.SetConfig(config);
+                scanner.Read();
+            }
+            else
+            {
+            }
+
+
+        }
+    }
+
+    void scanner_Data(object sender, Scanner.DataEventArgs e)
+    {
+        ScanDataCollection scanDataCollection = e.P0;
+
+        if ((scanDataCollection != null) && (scanDataCollection.Result == ScannerResults.Success))
+        {
+            IList<ScanDataCollection.ScanData> scanData = scanDataCollection.GetScanData();
+
+            foreach (ScanDataCollection.ScanData data in scanData)
+            {
+                string dataString = data.Data;
+
+                WeakReferenceMessenger.Default.Send(dataString);
+                // RunOnUiThread(() => DisplayScanData(dataString));
+
+            }
         }
     }
 
@@ -139,12 +220,13 @@ public class MainActivity : MauiAppCompatActivity, EMDKManager.IEMDKListener, EM
         String firstPath = whoAmI.Substring(0, whoAmI.IndexOf("/Android"));
         sb.AppendLine("Running as user #" + Regex.Match(firstPath, @"\d+").Value );
 
+		
 
-        //RECEIVING A STRING FROM XAML AND EXECUTING IN NATIVE ANDROID
-        WeakReferenceMessenger.Default.Register<string>(this, (r, m) =>
+		//RECEIVING A STRING FROM XAML AND EXECUTING IN NATIVE ANDROID
+		WeakReferenceMessenger.Default.Register<string>(this, (r, m) =>
         {
             //MainThread.BeginInvokeOnMainThread(() => {
-                var toast = Toast.MakeText(this, "weakToast<"+m+">", ToastLength.Short);
+                //var toast = Toast.MakeText(this, "weakToast<"+m+">", ToastLength.Short);
                 //toast.Show();
             //});
         });
@@ -166,11 +248,12 @@ public class MainActivity : MauiAppCompatActivity, EMDKManager.IEMDKListener, EM
         //adb shell content query --uri content://settings/system/screen_off_timeout
         sb.AppendLine("Initial Display TO: " + QueryAndroidSystemSettings(Settings.System.GetUriFor(Settings.System.ScreenOffTimeout)) + "msec");
 
+		WeakReferenceMessenger.Default.Send(sb.ToString());
 
-        // The EMDKManager object will be created and returned in the callback
-        EMDKResults results = EMDKManager.GetEMDKManager(this, this);
-        sb.AppendLine("GetEMDKManager:" + results.StatusCode);
-    }
+		// The EMDKManager object will be created and returned in the callback
+		EMDKResults results = EMDKManager.GetEMDKManager(this, this);
+		sb.AppendLine("GetEMDKManager:" + results.StatusCode);
+	}
 
     String QueryAndroidSystemSettings(Android.Net.Uri uri) { //e.g."content://settings/system/screen_off_timeout"
         string[] projection = new string[] { "name" };

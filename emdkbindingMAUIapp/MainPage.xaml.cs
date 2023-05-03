@@ -15,7 +15,7 @@ public partial class MainPage : ContentPage
 
         WeakReferenceMessenger.Default.Register<string>(this, (r, m) =>
         {
-            MainThread.BeginInvokeOnMainThread( () => { lbWelcome.Text = m;} );
+            MainThread.BeginInvokeOnMainThread( () => { lbWelcome.Text += "\n" + m;} );
         });
 
 		lbWelcome.Text += " v" + AppInfo.VersionString;

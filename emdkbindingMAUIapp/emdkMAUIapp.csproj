@@ -126,7 +126,7 @@
 	</ItemGroup>
 
 	<PropertyGroup>
-		<LaunchFlags>--user 10</LaunchFlags>
+		<LaunchFlags>--user 0</LaunchFlags>
 	</PropertyGroup>
 
 
