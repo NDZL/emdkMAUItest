@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0-maccatalyst;net6.0-android31.0</TargetFrameworks>
+		<TargetFrameworks>net6.0-android31.0</TargetFrameworks>
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
 		<OutputType>Exe</OutputType>
@@ -14,7 +14,7 @@
 		<ApplicationTitle>emdkMAUIapp</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.emdkMAUIapp</ApplicationId>
+		<ApplicationId>com.ndzl.emdkMAUIapp</ApplicationId>
 		<ApplicationIdGuid>0963e048-e59f-4277-bd7e-94ea3d1a99ac</ApplicationIdGuid>
 
 		<!-- Versions -->
@@ -121,7 +121,7 @@
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0-android31.0'">
 	  <PackageReference Include="Symbol.XamarinEMDK">
-	    <Version>8.0.0.2</Version>
+	    <Version>8.0.0.9</Version>
 	  </PackageReference>
 	</ItemGroup>
 
